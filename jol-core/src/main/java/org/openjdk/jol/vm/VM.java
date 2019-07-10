@@ -67,18 +67,22 @@ public class VM {
         }
 
         Instrumentation inst = null;
-        try {
-            inst = InstrumentationSupport.instance();
-        } catch (Exception e) {
-            System.out.println("# WARNING: Unable to get Instrumentation. " + e.getMessage());
-        }
-
-        try {
-            UniverseData saDetails = ServiceabilityAgentSupport.instance().getUniverseData();
-            INSTANCE = new HotspotUnsafe(u, inst, saDetails);
-        } catch (Exception e) {
-            System.out.println("# WARNING: Unable to attach Serviceability Agent. " + e.getMessage());
+        if (Boolean.getBoolean("jol.ignoreInstrumentation")) {
             INSTANCE = new HotspotUnsafe(u, inst);
+        } else {
+            try {
+                inst = InstrumentationSupport.instance();
+            } catch (Exception e) {
+                System.out.println("# WARNING: Unable to get Instrumentation. " + e.getMessage());
+            }
+
+            try {
+                UniverseData saDetails = ServiceabilityAgentSupport.instance().getUniverseData();
+                INSTANCE = new HotspotUnsafe(u, inst, saDetails);
+            } catch (Exception e) {
+                System.out.println("# WARNING: Unable to attach Serviceability Agent. " + e.getMessage());
+                INSTANCE = new HotspotUnsafe(u, inst);
+            }
         }
 
         return INSTANCE;
